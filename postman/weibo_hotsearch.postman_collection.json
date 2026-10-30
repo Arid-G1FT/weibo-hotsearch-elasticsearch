@@ -1,0 +1,476 @@
+{
+  "info": {
+    "name": "微博热搜搜索系统 - ES API Collection",
+    "description": "基于Elasticsearch 7.1.0的微博热搜搜索系统完整API集合，包含索引管理、CRUD操作、高级查询、聚合分析、地理位置查询等。",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01-索引管理",
+      "item": [
+        {
+          "name": "创建热搜索引",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/weibo_hot_search",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"settings\": {\n    \"number_of_shards\": 1,\n    \"number_of_replicas\": 0,\n    \"analysis\": {\n      \"analyzer\": {\n        \"ik_smart_custom\": {\n          \"type\": \"custom\",\n          \"tokenizer\": \"ik_smart\",\n          \"filter\": [\"lowercase\"]\n        }\n      }\n    }\n  },\n  \"mappings\": {\n    \"properties\": {\n      \"id\": {\"type\": \"keyword\"},\n      \"title\": {\n        \"type\": \"text\",\n        \"analyzer\": \"ik_smart_custom\",\n        \"fields\": {\"keyword\": {\"type\": \"keyword\"}}\n      },\n      \"category\": {\"type\": \"keyword\"},\n      \"hot_value\": {\"type\": \"integer\"},\n      \"rank\": {\"type\": \"integer\"},\n      \"comment_count\": {\"type\": \"integer\"},\n      \"like_count\": {\"type\": \"integer\"},\n      \"repost_count\": {\"type\": \"integer\"},\n      \"view_count\": {\"type\": \"long\"},\n      \"publish_time\": {\"type\": \"date\", \"format\": \"yyyy-MM-dd'T'HH:mm:ss\"},\n      \"update_time\": {\"type\": \"date\", \"format\": \"yyyy-MM-dd'T'HH:mm:ss\"},\n      \"location\": {\"type\": \"geo_point\"},\n      \"location_name\": {\"type\": \"keyword\"},\n      \"is_top\": {\"type\": \"boolean\"},\n      \"is_official\": {\"type\": \"boolean\"},\n      \"summary\": {\"type\": \"text\", \"analyzer\": \"ik_smart_custom\"},\n      \"tags\": {\"type\": \"keyword\"},\n      \"sentiment\": {\"type\": \"keyword\"}\n    }\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "创建用户行为索引",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/user_behavior",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"settings\": {\n    \"number_of_shards\": 1,\n    \"number_of_replicas\": 0\n  },\n  \"mappings\": {\n    \"properties\": {\n      \"id\": {\"type\": \"keyword\"},\n      \"user_id\": {\"type\": \"keyword\"},\n      \"action_type\": {\"type\": \"keyword\"},\n      \"search_keyword\": {\n        \"type\": \"text\",\n        \"analyzer\": \"ik_smart\",\n        \"fields\": {\"keyword\": {\"type\": \"keyword\"}}\n      },\n      \"hot_search_id\": {\"type\": \"keyword\"},\n      \"timestamp\": {\"type\": \"date\", \"format\": \"yyyy-MM-dd'T'HH:mm:ss\"},\n      \"dwell_time\": {\"type\": \"integer\"},\n      \"device_type\": {\"type\": \"keyword\"},\n      \"os\": {\"type\": \"keyword\"},\n      \"browser\": {\"type\": \"keyword\"},\n      \"ip_address\": {\"type\": \"ip\"},\n      \"location\": {\"type\": \"geo_point\"},\n      \"location_name\": {\"type\": \"keyword\"},\n      \"is_login\": {\"type\": \"boolean\"},\n      \"user_age\": {\"type\": \"integer\"},\n      \"user_gender\": {\"type\": \"keyword\"}\n    }\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "查看热搜索引Mapping",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:9200/weibo_hot_search/_mapping"
+          }
+        },
+        {
+          "name": "查看用户行为索引Mapping",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:9200/user_behavior/_mapping"
+          }
+        },
+        {
+          "name": "查看所有索引",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:9200/_cat/indices?v"
+          }
+        },
+        {
+          "name": "删除热搜索引",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "http://localhost:9200/weibo_hot_search"
+          }
+        },
+        {
+          "name": "删除用户行为索引",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "http://localhost:9200/user_behavior"
+          }
+        }
+      ]
+    },
+    {
+      "name": "02-数据导入",
+      "item": [
+        {
+          "name": "批量导入热搜数据",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/x-ndjson"}],
+            "url": "http://localhost:9200/_bulk",
+            "body": {
+              "mode": "file",
+              "file": {"src": "data/bulk_hot_search.json"}
+            }
+          }
+        },
+        {
+          "name": "批量导入用户行为数据",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/x-ndjson"}],
+            "url": "http://localhost:9200/_bulk",
+            "body": {
+              "mode": "file",
+              "file": {"src": "data/bulk_user_behavior.json"}
+            }
+          }
+        },
+        {
+          "name": "查看索引文档数量",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:9200/_cat/count/weibo_hot_search?v"
+          }
+        }
+      ]
+    },
+    {
+      "name": "03-CRUD操作",
+      "item": [
+        {
+          "name": "C-创建单条热搜文档",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/weibo_hot_search/_doc",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"hs_99999\",\n  \"title\": \"Postman测试新增热搜\",\n  \"category\": \"科技\",\n  \"hot_value\": 12345678,\n  \"rank\": 1,\n  \"comment_count\": 50000,\n  \"like_count\": 200000,\n  \"repost_count\": 10000,\n  \"view_count\": 50000000,\n  \"publish_time\": \"2025-06-17T10:00:00\",\n  \"update_time\": \"2025-06-17T12:00:00\",\n  \"location\": {\"lat\": 39.9042, \"lon\": 116.4074},\n  \"location_name\": \"北京\",\n  \"is_top\": true,\n  \"is_official\": true,\n  \"summary\": \"这是一条通过Postman插入的测试数据\",\n  \"tags\": [\"测试\", \"Postman\"],\n  \"sentiment\": \"中性\"\n}"
+            }
+          }
+        },
+        {
+          "name": "R-根据ID查询文档",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:9200/weibo_hot_search/_doc/hs_00001"
+          }
+        },
+        {
+          "name": "R-查询所有热搜文档",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:9200/weibo_hot_search/_search"
+          }
+        },
+        {
+          "name": "U-更新文档（覆盖全部）",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/weibo_hot_search/_doc/hs_99999",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"hs_99999\",\n  \"title\": \"Postman测试更新热搜-已修改\",\n  \"category\": \"科技\",\n  \"hot_value\": 99999999,\n  \"rank\": 1,\n  \"comment_count\": 88888,\n  \"like_count\": 999999,\n  \"repost_count\": 50000,\n  \"view_count\": 80000000,\n  \"publish_time\": \"2025-06-17T10:00:00\",\n  \"update_time\": \"2025-06-17T14:00:00\",\n  \"location\": {\"lat\": 39.9042, \"lon\": 116.4074},\n  \"location_name\": \"北京\",\n  \"is_top\": true,\n  \"is_official\": true,\n  \"summary\": \"这是一条通过Postman更新后的测试数据，热度值已大幅提升\",\n  \"tags\": [\"测试\", \"Postman\", \"更新\"],\n  \"sentiment\": \"正面\"\n}"
+            }
+          }
+        },
+        {
+          "name": "U-局部更新文档（update）",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/weibo_hot_search/_doc/hs_99999/_update",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doc\": {\n    \"hot_value\": 77777777,\n    \"rank\": 2,\n    \"update_time\": \"2025-06-17T16:00:00\"\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "D-删除单条文档",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "http://localhost:9200/weibo_hot_search/_doc/hs_99999"
+          }
+        }
+      ]
+    },
+    {
+      "name": "04-高级查询",
+      "item": [
+        {
+          "name": "全文查询-Match查询热搜标题",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/weibo_hot_search/_search",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": {\n    \"match\": {\n      \"title\": \"明星\"\n    }\n  },\n  \"sort\": [\n    {\"hot_value\": \"desc\"}\n  ],\n  \"size\": 10\n}"
+            }
+          }
+        },
+        {
+          "name": "全文查询-Multi Match多字段查询",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/weibo_hot_search/_search",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": {\n    \"multi_match\": {\n      \"query\": \"周杰伦\",\n      \"fields\": [\"title^3\", \"summary\"]\n    }\n  },\n  \"size\": 10\n}"
+            }
+          }
+        },
+        {
+          "name": "范围查询-热度值范围",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/weibo_hot_search/_search",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": {\n    \"range\": {\n      \"hot_value\": {\n        \"gte\": 10000000,\n        \"lte\": 50000000\n      }\n    }\n  },\n  \"sort\": [\n    {\"hot_value\": \"desc\"}\n  ],\n  \"size\": 20\n}"
+            }
+          }
+        },
+        {
+          "name": "范围查询-时间范围",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/weibo_hot_search/_search",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": {\n    \"range\": {\n      \"publish_time\": {\n        \"gte\": \"2024-06-01T00:00:00\",\n        \"lte\": \"2024-06-30T23:59:59\"\n      }\n    }\n  },\n  \"sort\": [\n    {\"publish_time\": \"desc\"}\n  ],\n  \"size\": 20\n}"
+            }
+          }
+        },
+        {
+          "name": "模糊查询-Fuzzy查询",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/weibo_hot_search/_search",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": {\n    \"fuzzy\": {\n      \"title.keyword\": {\n        \"value\": \"周杰伦\",\n        \"fuzziness\": \"AUTO\"\n      }\n    }\n  },\n  \"size\": 10\n}"
+            }
+          }
+        },
+        {
+          "name": "Wildcard通配符查询",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/weibo_hot_search/_search",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": {\n    \"wildcard\": {\n      \"title.keyword\": {\n        \"value\": \"*明星*\"\n      }\n    }\n  },\n  \"size\": 10\n}"
+            }
+          }
+        },
+        {
+          "name": "多条件组合查询-Bool查询",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/weibo_hot_search/_search",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": {\n    \"bool\": {\n      \"must\": [\n        {\"match\": {\"title\": \"明星\"}},\n        {\"range\": {\"hot_value\": {\"gte\": 5000000}}},\n        {\"term\": {\"category\": \"娱乐\"}}\n      ],\n      \"must_not\": [\n        {\"term\": {\"is_official\": false}}\n      ],\n      \"should\": [\n        {\"term\": {\"is_top\": true}}\n      ]\n    }\n  },\n  \"sort\": [\n    {\"hot_value\": \"desc\"}\n  ],\n  \"size\": 20\n}"
+            }
+          }
+        },
+        {
+          "name": "排序查询-多字段排序",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/weibo_hot_search/_search",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": {\n    \"match_all\": {}\n  },\n  \"sort\": [\n    {\"rank\": \"asc\"},\n    {\"hot_value\": \"desc\"}\n  ],\n  \"size\": 20\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05-聚合分析",
+      "item": [
+        {
+          "name": "按类别聚合-Terms聚合",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/weibo_hot_search/_search",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"size\": 0,\n  \"aggs\": {\n    \"category_stats\": {\n      \"terms\": {\n        \"field\": \"category\",\n        \"size\": 10\n      }\n    }\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "热度值统计-Stats聚合",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/weibo_hot_search/_search",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"size\": 0,\n  \"aggs\": {\n    \"hot_value_stats\": {\n      \"stats\": {\n        \"field\": \"hot_value\"\n      }\n    },\n    \"view_count_stats\": {\n      \"stats\": {\n        \"field\": \"view_count\"\n      }\n    }\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "按月份日期直方图聚合",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/weibo_hot_search/_search",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"size\": 0,\n  \"aggs\": {\n    \"publish_time_histogram\": {\n      \"date_histogram\": {\n        \"field\": \"publish_time\",\n        \"calendar_interval\": \"month\",\n        \"format\": \"yyyy-MM\"\n      }\n    }\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "子聚合-按类别统计平均热度",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/weibo_hot_search/_search",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"size\": 0,\n  \"aggs\": {\n    \"category_avg_hot\": {\n      \"terms\": {\n        \"field\": \"category\"\n      },\n      \"aggs\": {\n        \"avg_hot_value\": {\n          \"avg\": {\n            \"field\": \"hot_value\"\n          }\n        },\n        \"max_hot_value\": {\n          \"max\": {\n            \"field\": \"hot_value\"\n          }\n        }\n      }\n    }\n  }\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06-地理位置查询",
+      "item": [
+        {
+          "name": "距离查询-北京周边100km",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/weibo_hot_search/_search",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": {\n    \"geo_distance\": {\n      \"distance\": \"100km\",\n      \"location\": {\n        \"lat\": 39.9042,\n        \"lon\": 116.4074\n      }\n    }\n  },\n  \"sort\": [\n    {\n      \"_geo_distance\": {\n        \"location\": {\n          \"lat\": 39.9042,\n          \"lon\": 116.4074\n        },\n        \"order\": \"asc\",\n        \"unit\": \"km\"\n      }\n    }\n  ],\n  \"size\": 20\n}"
+            }
+          }
+        },
+        {
+          "name": "矩形范围查询-Bounding Box",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/weibo_hot_search/_search",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": {\n    \"geo_bounding_box\": {\n      \"location\": {\n        \"top_left\": {\n          \"lat\": 40.0,\n          \"lon\": 116.0\n        },\n        \"bottom_right\": {\n          \"lat\": 39.0,\n          \"lon\": 117.0\n        }\n      }\n    }\n  },\n  \"size\": 20\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "07-用户行为分析",
+      "item": [
+        {
+          "name": "用户搜索关键词Top10",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/user_behavior/_search",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"size\": 0,\n  \"query\": {\n    \"term\": {\n      \"action_type\": \"search\"\n    }\n  },\n  \"aggs\": {\n    \"top_search_keywords\": {\n      \"terms\": {\n        \"field\": \"search_keyword.keyword\",\n        \"size\": 10\n      }\n    }\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "用户行为类型分布",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/user_behavior/_search",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"size\": 0,\n  \"aggs\": {\n    \"action_type_distribution\": {\n      \"terms\": {\n        \"field\": \"action_type\"\n      }\n    }\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "用户设备类型分布",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/user_behavior/_search",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"size\": 0,\n  \"aggs\": {\n    \"device_distribution\": {\n      \"terms\": {\n        \"field\": \"device_type\"\n      }\n    }\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "用户停留时间统计",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/user_behavior/_search",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"size\": 0,\n  \"query\": {\n    \"range\": {\n      \"dwell_time\": {\n        \"gt\": 0\n      }\n    }\n  },\n  \"aggs\": {\n    \"dwell_time_stats\": {\n      \"stats\": {\n        \"field\": \"dwell_time\"\n      }\n    },\n    \"dwell_time_histogram\": {\n      \"histogram\": {\n        \"field\": \"dwell_time\",\n        \"interval\": 60\n      }\n    }\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "用户年龄分布",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/user_behavior/_search",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"size\": 0,\n  \"aggs\": {\n    \"age_distribution\": {\n      \"range\": {\n        \"field\": \"user_age\",\n        \"ranges\": [\n          {\"to\": 18, \"key\": \"18岁以下\"},\n          {\"from\": 18, \"to\": 25, \"key\": \"18-25岁\"},\n          {\"from\": 25, \"to\": 35, \"key\": \"25-35岁\"},\n          {\"from\": 35, \"to\": 50, \"key\": \"35-50岁\"},\n          {\"from\": 50, \"key\": \"50岁以上\"}\n        ]\n      }\n    }\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "用户性别分布",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/user_behavior/_search",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"size\": 0,\n  \"aggs\": {\n    \"gender_distribution\": {\n      \"terms\": {\n        \"field\": \"user_gender\"\n      }\n    }\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "用户地理位置分布",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/user_behavior/_search",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"size\": 0,\n  \"aggs\": {\n    \"location_distribution\": {\n      \"terms\": {\n        \"field\": \"location_name\"\n      }\n    }\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "用户行为时间分布（按小时）",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/user_behavior/_search",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"size\": 0,\n  \"aggs\": {\n    \"hourly_distribution\": {\n      \"date_histogram\": {\n        \"field\": \"timestamp\",\n        \"fixed_interval\": \"1h\",\n        \"format\": \"HH:mm\"\n      }\n    }\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "用户登录状态与行为关联",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "http://localhost:9200/user_behavior/_search",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"size\": 0,\n  \"aggs\": {\n    \"login_vs_action\": {\n      \"terms\": {\n        \"field\": \"is_login\"\n      },\n      \"aggs\": {\n        \"action_breakdown\": {\n          \"terms\": {\n            \"field\": \"action_type\"\n          }\n        }\n      }\n    }\n  }\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "analysis": {
+      "analyzer": {
+        "ik_smart_custom": {
+          "type": "custom",
+          "tokenizer": "ik_smart",
+          "filter": ["lowercase"]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "id": {
+        "type": "keyword"
+      },
+      "title": {
+        "type": "text",
+        "analyzer": "ik_smart_custom",
+        "fields": {
+          "keyword": {
+            "type": "keyword"
+          }
+        }
+      },
+      "category": {
+        "type": "keyword"
+      },
+      "hot_value": {
+        "type": "integer"
+      },
+      "rank": {
+        "type": "integer"
+      },
+      "comment_count": {
+        "type": "integer"
+      },
+      "like_count": {
+        "type": "integer"
+      },
+      "repost_count": {
+        "type": "integer"
+      },
+      "view_count": {
+        "type": "long"
+      },
+      "publish_time": {
+        "type": "date",
+        "format": "yyyy-MM-dd'T'HH:mm:ss"
+      },
+      "update_time": {
+        "type": "date",
+        "format": "yyyy-MM-dd'T'HH:mm:ss"
+      },
+      "location": {
+        "type": "geo_point"
+      },
+      "location_name": {
+        "type": "keyword"
+      },
+      "is_top": {
+        "type": "boolean"
+      },
+      "is_official": {
+        "type": "boolean"
+      },
+      "summary": {
+        "type": "text",
+        "analyzer": "ik_smart_custom"
+      },
+      "tags": {
+        "type": "keyword"
+      },
+      "sentiment": {
+        "type": "keyword"
+      }
+    }
+  }
+}

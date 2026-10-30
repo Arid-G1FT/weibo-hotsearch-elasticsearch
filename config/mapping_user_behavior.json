@@ -1,0 +1,65 @@
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0
+  },
+  "mappings": {
+    "properties": {
+      "id": {
+        "type": "keyword"
+      },
+      "user_id": {
+        "type": "keyword"
+      },
+      "action_type": {
+        "type": "keyword"
+      },
+      "search_keyword": {
+        "type": "text",
+        "analyzer": "ik_smart",
+        "fields": {
+          "keyword": {
+            "type": "keyword"
+          }
+        }
+      },
+      "hot_search_id": {
+        "type": "keyword"
+      },
+      "timestamp": {
+        "type": "date",
+        "format": "yyyy-MM-dd'T'HH:mm:ss"
+      },
+      "dwell_time": {
+        "type": "integer"
+      },
+      "device_type": {
+        "type": "keyword"
+      },
+      "os": {
+        "type": "keyword"
+      },
+      "browser": {
+        "type": "keyword"
+      },
+      "ip_address": {
+        "type": "ip"
+      },
+      "location": {
+        "type": "geo_point"
+      },
+      "location_name": {
+        "type": "keyword"
+      },
+      "is_login": {
+        "type": "boolean"
+      },
+      "user_age": {
+        "type": "integer"
+      },
+      "user_gender": {
+        "type": "keyword"
+      }
+    }
+  }
+}
