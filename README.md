@@ -2,6 +2,8 @@
 
 基于 Elasticsearch 7.17、IK 中文分词、Kibana 和 Python 的搜索练习项目，包含索引 Mapping、Bulk 导入、全文检索、聚合分析、地理查询和本地图表分析。
 
+![Elasticsearch 搜索与分析项目预览](docs/preview.png)
+
 ## 数据与边界
 
 - `data/weibo_hot_search.json`：10,000 条模拟热搜，ID 唯一。
